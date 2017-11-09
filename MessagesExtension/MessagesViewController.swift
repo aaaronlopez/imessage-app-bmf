@@ -8,8 +8,11 @@
 
 import UIKit
 import Messages
+import Branch
 
 class MessagesViewController: MSMessagesAppViewController {
+    
+    @IBOutlet weak var deepLink: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,6 +22,13 @@ class MessagesViewController: MSMessagesAppViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func didBecomeActive(with conversation: MSConversation) {
+        Branch.getInstance().initSession(launchOptions: [:]) { (params, error) in
+            // do stuff with deep link data (nav to page, display content, etc)
+            print(params as! [String: AnyObject] )
+        }
     }
     
     // MARK: - Conversation Handling
@@ -69,4 +79,64 @@ class MessagesViewController: MSMessagesAppViewController {
         // Use this method to finalize any behaviors associated with the change in presentation style.
     }
 
+    @IBAction func cmdShareButton(_ sender: Any) {
+        let buo = BranchUniversalObject(canonicalIdentifier: "content/123")
+        buo.canonicalUrl = "https://example.com/content/123"
+        buo.title = "Content 123 Title"
+        buo.contentDescription = "Content 123 Description \(Date())"
+        buo.imageUrl = "http://lorempixel.com/400/400/"
+        buo.price = 12.12
+        buo.currency = "USD"
+        buo.contentIndexMode = .public
+        buo.automaticallyListOnSpotlight = true
+        buo.addMetadataKey("custom", value: "123")
+        buo.addMetadataKey("anything", value: "everything")
+        
+        let lp: BranchLinkProperties = BranchLinkProperties()
+        lp.channel = "facebook"
+        lp.feature = "sharing"
+        lp.campaign = "content 123 launch"
+        lp.stage = "new user"
+        lp.tags = ["one", "two", "three"]
+        
+        lp.addControlParam("custom_data", withValue: "yes")
+        lp.addControlParam("look_at", withValue: "this")
+        lp.addControlParam("nav_to", withValue: "over here")
+        lp.addControlParam("random", withValue: UUID.init().uuidString)
+        
+        let message = "Check out this link"
+        buo.showShareSheet(with: lp, andShareText: message, from: self) { (activityType, completed) in
+            print(activityType ?? "")
+        }
+    }
+    
+    @IBAction func cmdCreateDeepLink(_ sender: Any) {
+        let buo = BranchUniversalObject(canonicalIdentifier: "content/123")
+        buo.canonicalUrl = "https://example.com/content/123"
+        buo.title = "Content 123 Title"
+        buo.contentDescription = "Content 123 Description \(Date())"
+        buo.imageUrl = "http://lorempixel.com/400/400/"
+        buo.price = 12.12
+        buo.currency = "USD"
+        buo.contentIndexMode = .public
+        buo.automaticallyListOnSpotlight = true
+        buo.addMetadataKey("custom", value: "123")
+        buo.addMetadataKey("anything", value: "everything")
+        
+        let lp: BranchLinkProperties = BranchLinkProperties()
+        lp.channel = "facebook"
+        lp.feature = "sharing"
+        lp.campaign = "content 123 launch"
+        lp.stage = "new user"
+        lp.tags = ["one", "two", "three"]
+        
+        lp.addControlParam("custom_data", withValue: "yes")
+        lp.addControlParam("look_at", withValue: "this")
+        lp.addControlParam("nav_to", withValue: "over here")
+        lp.addControlParam("random", withValue: UUID.init().uuidString)
+        
+        let link = buo.getShortUrl(with: lp)
+        
+        deepLink.text = link
+    }
 }

@@ -15,5 +15,6 @@ target 'MessagesExtension' do
   use_frameworks!
 
   # Pods for MessagesExtension
+  pod “Branch”
 
 end
